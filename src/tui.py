@@ -14,6 +14,7 @@ from rich.text import Text
 
 from .config import get_config
 from .scraper import SketchfabScraper, WoWHeadScraper
+from .parameter_tuner import ParameterTuner
 
 
 class ScraperTUI:
@@ -27,10 +28,10 @@ class ScraperTUI:
     def print_header(self) -> None:
         """Print application header."""
         header = """
-╔═══════════════════════════════════════════════════════════════════╗
+╔════════════════════════════════════════════════════════════════════╗
 ║                   3D Model Scraper - WoWHead Edition               ║
 ║          Extract & Convert 3D Models to STL Format               ║
-╚═══════════════════════════════════════════════════════════════════╝
+╚════════════════════════════════════════════════════════════════════╝
         """
         self.console.print(header, style="bold cyan")
 
@@ -41,7 +42,8 @@ class ScraperTUI:
         menu_table.add_row("[bold]2.[/bold] Search & Download from Sketchfab")
         menu_table.add_row("[bold]3.[/bold] Batch Process Multiple URLs")
         menu_table.add_row("[bold]4.[/bold] View Settings")
-        menu_table.add_row("[bold]5.[/bold] Exit")
+        menu_table.add_row("[bold]5.[/bold] Parameter Tuning")
+        menu_table.add_row("[bold]6.[/bold] Exit")
 
         panel = Panel(
             menu_table,
@@ -53,7 +55,7 @@ class ScraperTUI:
 
     def get_menu_choice(self) -> str:
         """Get user menu choice."""
-        return Prompt.ask("[bold cyan]Select option[/bold cyan]", choices=["1", "2", "3", "4", "5"])
+        return Prompt.ask("[bold cyan]Select option[/bold cyan]", choices=["1", "2", "3", "4", "5", "6"])
 
     def wowhead_scraper_menu(self) -> None:
         """WoWHead scraper menu."""
@@ -348,7 +350,12 @@ class ScraperTUI:
         settings_table.add_row("[cyan]Log Level[/cyan]", self.config.log_level)
 
         self.console.print(settings_table)
-        self.console.print("\n[yellow]💡 Edit .env file to change settings[/yellow]\n")
+        self.console.print("\n[yellow]💡 To tune parameters, use the Parameter Tuning menu[/yellow]\n")
+
+    def parameter_tuning_menu(self) -> None:
+        """Launch the parameter tuning interface."""
+        tuner = ParameterTuner()
+        tuner.run()
 
     def run(self) -> None:
         """Run the TUI main loop."""
@@ -367,12 +374,15 @@ class ScraperTUI:
             elif choice == "4":
                 self.view_settings()
             elif choice == "5":
+                self.parameter_tuning_menu()
+            elif choice == "6":
                 self.console.print(
                     "\n[bold cyan]👋 Thanks for using 3D Model Scraper![/bold cyan]\n"
                 )
                 break
 
             # Pause before next menu
-            Prompt.ask("\n[dim]Press Enter to continue[/dim]")
+            if choice != "5":  # Don't pause after parameter tuning (it has its own loops)
+                Prompt.ask("\n[dim]Press Enter to continue[/dim]")
             self.console.clear()
             self.print_header()
